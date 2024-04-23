@@ -1,4 +1,16 @@
+import { object, string, number, optional } from 'zod';
 import db from './db.mjs';
+
+
+const taskSchema = object({
+  name: string().min(1),
+  description: string().min(1),
+});
+
+const updateTaskSchema = object({
+  name: optional(string().min(1)),
+  description: optional(string().min(1)),
+});
 
 function getAllCategories() {
   return new Promise((resolve, reject) => {
@@ -76,7 +88,7 @@ function updatePost(id, title, content, category_id) {
 
 function deletePost(id) {
   return new Promise((resolve, reject) => {
-    db.run("DELETE FROM posts WHERE id = ?", [id], function(err) {
+    db.run(`DELETE FROM posts WHERE id = ${id}`, function(err) {
       if (err) {
         reject(err);
       } else {
@@ -86,4 +98,85 @@ function deletePost(id) {
   });
 }
 
-export { getAllCategories, getAllPosts, getPostById, createPost, updatePost, deletePost };
+function getAllTasks() {
+  return new Promise((resolve, reject) => {
+    db.all("SELECT * FROM tasks", (err, rows) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(rows);
+      }
+    });
+  });
+}
+
+function getTaskById(id) {
+  return new Promise((resolve, reject) => {
+    db.get("SELECT * FROM tasks WHERE id = ?", [id], (err, row) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(row);
+      }
+    });
+  });
+}
+
+function createTask(name, description, post_id) {
+  try {
+
+    const taskData = taskSchema.parse({ name, description, post_id });
+
+    return new Promise((resolve, reject) => {
+      db.run("INSERT INTO tasks (name, description, post_id) VALUES (?, ?, ?)", [taskData.name, taskData.description, taskData.post_id], function(err) {
+        if (err) {
+          reject(err);
+        } else {
+          getTaskById(this.lastID).then(resolve).catch(reject);
+        }
+      });
+    });
+  } catch (error) {
+    return Promise.reject(error);
+  }
+}
+
+function updateTask(id, updates) {
+  try {
+    const taskUpdates = updateTaskSchema.parse(updates);
+    return new Promise((resolve, reject) => {
+      db.get("SELECT * FROM tasks WHERE id = ?", [id], (err, row) => {
+        if (err) {
+          reject(err);
+        } else if (!row) {
+          resolve(null);
+        } else {
+          const updatedTask = { ...row, ...taskUpdates };
+          db.run(`UPDATE tasks SET title = '${updatedTask.title}', description = '${updatedTask.description}' WHERE id = ${id}`, function(err) {
+            if (err) {
+              reject(err);
+            } else {
+              getTaskById(id).then(resolve).catch(reject);
+            }
+          });
+        }
+      });
+    });
+  } catch (error) {
+    return Promise.reject(error);
+  }
+}
+
+function deleteTask(id) {
+  return new Promise((resolve, reject) => {
+    db.run("DELETE FROM tasks WHERE id = ?", [id], function(err) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
+export { getAllCategories, getAllPosts, getPostById, createPost, updatePost, deletePost, getAllTasks, getTaskById, createTask, updateTask, deleteTask };

@@ -1,8 +1,11 @@
-# Dossiers
+# Folders
 node_modules/
 .vscode/
 
-# Fichiers
+# Project
+*.sqlite
+
+# Files
 .DS_Store
 .env
 .env.local
