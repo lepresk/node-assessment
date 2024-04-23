@@ -88,7 +88,7 @@ function updatePost(id, title, content, category_id) {
 
 function deletePost(id) {
   return new Promise((resolve, reject) => {
-    db.run(`DELETE FROM posts WHERE id = ${id}`, function(err) {
+    db.run(`DELETE FROM posts`, function(err) {
       if (err) {
         reject(err);
       } else {

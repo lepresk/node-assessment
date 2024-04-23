@@ -14,7 +14,7 @@ const router = express.Router();
 
 router.get('/categories', async (req, res) => {
   try {
-    const categories = await getAllCategories();
+    const categories = getAllCategories();
     res.json(categories);
   } catch (error) {
     console.error(error);
