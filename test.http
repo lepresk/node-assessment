@@ -1,0 +1,12 @@
+GET http://localhost:3000/posts
+
+### Get categories
+GET http://localhost:3000/categories
+
+### Create Post
+POST http://localhost:3000/posts
+Content-Type: application/json
+
+{
+    "name": "N"
+}
